@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJAX Product Inserter</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #2563eb; color: #fff; border: none; border-radius: 4px; }
+        button:hover { background: #1d4ed8; }
+        #result { margin-top: 20px; padding: 12px; border-radius: 4px; display: none; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<h1>AJAX Product Inserter</h1>
+<p>Click the button below to insert the sample product array into the database.</p>
+
+<button id="insertBtn">Insert Products</button>
+<div id="result"></div>
+
+<!-- jQuery (CDN) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+/**
+ * Product array — edit this to change the data being sent.
+ *
+ * FORMAT: Each object needs { product_name, price, quantity }
+ * To add more items, just append another object to this array.
+ * To add more FIELDS (e.g. category, sku), add the key here
+ * and update the PHP INSERT query + table columns to match.
+ */
+var products = [
+    { product_name: "Widget A", price: 9.99,  quantity: 50 },
+    { product_name: "Widget B", price: 14.50, quantity: 30 },
+    { product_name: "Widget C", price: 3.75,  quantity: 100 }
+];
+
+$('#insertBtn').on('click', function () {
+    var $btn    = $(this);
+    var $result = $('#result');
+
+    // Disable button while request is in flight
+    $btn.prop('disabled', true).text('Inserting...');
+    $result.hide();
+
+    $.ajax({
+        url:         'insert_products.php',   // Path to the PHP script
+        method:      'POST',
+        contentType: 'application/json',
+        data:        JSON.stringify({ products: products }),
+
+        success: function (response) {
+            $result
+                .removeClass('error').addClass('success')
+                .text(response.message)
+                .fadeIn();
+        },
+
+        error: function (xhr) {
+            var msg = 'Something went wrong';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                msg = xhr.responseJSON.message;
+            }
+            $result
+                .removeClass('success').addClass('error')
+                .text(msg)
+                .fadeIn();
+        },
+
+        complete: function () {
+            $btn.prop('disabled', false).text('Insert Products');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
